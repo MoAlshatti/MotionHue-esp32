@@ -6,9 +6,9 @@
 #include "esp_wifi.h"
 #include "esp_log.h"
 #include "wifi.h"
+#include "nvs_flash.h"
+#include "string.h"
 
-#define SSID "ssid"
-#define PASS "password"
 #define SUCCESS_BIT BIT0
 #define FAILURE_BIT BIT1
 #define MAX_RETRY 5
@@ -16,6 +16,32 @@
 static const char* TAG = "WIFI";
 static EventGroupHandle_t event_group;
 static int curr_retry = 0;
+
+void nvs_wifi_cred_set(char* ssid, char* pass){
+    nvs_handle_t nvs_handle;
+    ESP_ERROR_CHECK(nvs_open("storage",NVS_READWRITE,&nvs_handle));
+    ESP_ERROR_CHECK(nvs_set_str(nvs_handle,"SSID_",ssid));
+    ESP_ERROR_CHECK(nvs_set_str(nvs_handle,"PASS_",pass));
+    nvs_close(nvs_handle);
+    return;
+}
+
+void nvs_wifi_cred_get(char **ssid_buf, char **pass_buf){
+    nvs_handle_t nvs_handle;
+    size_t ssid_length;
+    size_t pass_length;
+    ESP_ERROR_CHECK(nvs_open("storage",NVS_READONLY,&nvs_handle));
+
+    ESP_ERROR_CHECK(nvs_get_str(nvs_handle,"SSID_",NULL,&ssid_length));
+    *ssid_buf = malloc(ssid_length);
+    ESP_ERROR_CHECK(nvs_get_str(nvs_handle,"SSID_",*ssid_buf,&ssid_length));
+
+    ESP_ERROR_CHECK(nvs_get_str(nvs_handle,"PASS_",NULL,&pass_length));
+    *pass_buf = malloc(pass_length);
+    ESP_ERROR_CHECK(nvs_get_str(nvs_handle,"PASS_",*pass_buf,&pass_length));
+    nvs_close(nvs_handle);
+    return;
+}
 
 static void wifi_event_handler(void* handler_arg, esp_event_base_t base, int32_t id, void* event_data){
     if (base == WIFI_EVENT && id == WIFI_EVENT_STA_START){
@@ -58,11 +84,25 @@ esp_err_t wifi_connect(void){
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 
-    wifi_config_t wifi_conf = {
-        .sta = {
-            .ssid = SSID, .password = PASS
-        }
-    };
+    char *ssid;
+    char *pass;
+    ESP_LOGI(TAG,"reached %d\n",__LINE__);
+    nvs_wifi_cred_get(&ssid,&pass);
+    ESP_LOGI(TAG,"reached %d\n",__LINE__);
+    wifi_config_t wifi_conf = {0};
+
+    for (int i = 0; i < strlen(ssid); i++){
+        wifi_conf.sta.ssid[i] = ssid[i];
+    }
+    ESP_LOGI(TAG,"reached %d\n",__LINE__);
+    for (int i = 0; i < strlen(pass); i++){
+        wifi_conf.sta.password[i] = pass[i];
+    }
+    ESP_LOGI(TAG,"ssid: %s\n",ssid);
+    ESP_LOGI(TAG,"pass: %s\n",pass);
+    free(ssid);
+    free(pass);
+    ESP_LOGI(TAG,"reached %d\n",__LINE__);
 
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA,&wifi_conf));
     ESP_ERROR_CHECK(esp_wifi_start());

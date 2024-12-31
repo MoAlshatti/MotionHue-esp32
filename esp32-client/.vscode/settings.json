@@ -5,5 +5,8 @@
         "board/esp32-wrover-kit-3.3v.cfg"
     ],
     "idf.port": "/dev/ttyACM0",
-    "idf.toolsPath": "/home/fury/.espressif"
+    "idf.toolsPath": "/home/fury/.espressif",
+    "files.associations": {
+        "freertos.h": "c"
+    }
 }

@@ -13,7 +13,8 @@ void app_main(void)
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NO_MEM){
         ESP_ERROR_CHECK(nvs_flash_erase());
         nvs_flash_init();
-    }   
+    }  
+    //nvs_wifi_cred_set("SSID","PASS");   // Only run once to copy credentials to nvs memory.
 
     err = wifi_connect();
 
