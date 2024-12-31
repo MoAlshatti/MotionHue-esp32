@@ -26,7 +26,7 @@ void nvs_wifi_cred_set(char* ssid, char* pass){
     return;
 }
 
-void nvs_wifi_cred_get(char **ssid_buf, char **pass_buf){
+static void nvs_wifi_cred_get(char **ssid_buf, char **pass_buf){
     nvs_handle_t nvs_handle;
     size_t ssid_length;
     size_t pass_length;
@@ -39,6 +39,7 @@ void nvs_wifi_cred_get(char **ssid_buf, char **pass_buf){
     ESP_ERROR_CHECK(nvs_get_str(nvs_handle,"PASS_",NULL,&pass_length));
     *pass_buf = malloc(pass_length);
     ESP_ERROR_CHECK(nvs_get_str(nvs_handle,"PASS_",*pass_buf,&pass_length));
+    
     nvs_close(nvs_handle);
     return;
 }
@@ -61,7 +62,6 @@ static void wifi_event_handler(void* handler_arg, esp_event_base_t base, int32_t
         curr_retry = 0;
         xEventGroupSetBits(event_group, SUCCESS_BIT);
     }
-    
 }
 
 esp_err_t wifi_connect(void){
@@ -70,39 +70,29 @@ esp_err_t wifi_connect(void){
     event_group = xEventGroupCreate();
 
     ESP_ERROR_CHECK(esp_netif_init());
-
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler,NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler, NULL));
 
     esp_netif_create_default_wifi_sta();
 
     wifi_init_config_t wifi_init_conf = WIFI_INIT_CONFIG_DEFAULT();
-
     ESP_ERROR_CHECK(esp_wifi_init(&wifi_init_conf));
-
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 
     char *ssid;
     char *pass;
-    ESP_LOGI(TAG,"reached %d\n",__LINE__);
     nvs_wifi_cred_get(&ssid,&pass);
-    ESP_LOGI(TAG,"reached %d\n",__LINE__);
     wifi_config_t wifi_conf = {0};
 
     for (int i = 0; i < strlen(ssid); i++){
         wifi_conf.sta.ssid[i] = ssid[i];
     }
-    ESP_LOGI(TAG,"reached %d\n",__LINE__);
     for (int i = 0; i < strlen(pass); i++){
         wifi_conf.sta.password[i] = pass[i];
     }
-    ESP_LOGI(TAG,"ssid: %s\n",ssid);
-    ESP_LOGI(TAG,"pass: %s\n",pass);
     free(ssid);
     free(pass);
-    ESP_LOGI(TAG,"reached %d\n",__LINE__);
 
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA,&wifi_conf));
     ESP_ERROR_CHECK(esp_wifi_start());
