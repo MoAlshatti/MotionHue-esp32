@@ -6,6 +6,7 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "wifi.h"
+#include "sensor.h"
 
 void app_main(void)
 {
@@ -22,5 +23,8 @@ void app_main(void)
         esp_restart();
     }
     
+    sensor_init();
+    create_sensor_task();
+    register_sensor_ISR();
 
 }

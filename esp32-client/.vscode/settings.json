@@ -8,6 +8,7 @@
     "idf.toolsPath": "/home/fury/.espressif",
     "files.associations": {
         "freertos.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "nvs_flash.h": "c"
     }
 }

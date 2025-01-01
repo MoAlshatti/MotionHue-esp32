@@ -13,6 +13,12 @@ void IRAM_ATTR sensor_interrupt_handler(void *args){
     portYIELD_FROM_ISR(xHigherPriorityHasAwoken);
 }
 
+void register_sensor_ISR(void){
+    ESP_ERROR_CHECK(gpio_install_isr_service(ESP_INTR_FLAG_IRAM));
+    ESP_ERROR_CHECK(gpio_isr_handler_add(SENSOR_PIN,sensor_interrupt_handler,NULL));
+    return;
+}
+
 static void sensor_task_function(void *args){
 
     while(1){
