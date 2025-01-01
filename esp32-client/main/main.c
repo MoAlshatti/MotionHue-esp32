@@ -14,7 +14,7 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_erase());
         nvs_flash_init();
     }  
-    //nvs_wifi_cred_set("SSID","PASS");   // Only run once to copy credentials to nvs memory.
+    //nvs_wifi_cred_set("SSID","PASS");   // Only run once to copy credentials to nvs memory. change SSID & PASS to actual values
 
     err = wifi_connect();
 
