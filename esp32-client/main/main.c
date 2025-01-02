@@ -7,6 +7,7 @@
 #include "nvs_flash.h"
 #include "wifi.h"
 #include "sensor.h"
+#include "client.h"
 
 void app_main(void)
 {
@@ -23,8 +24,10 @@ void app_main(void)
         esp_restart();
     }
     
+    int fd = server_connect();
+
     sensor_init();
-    create_sensor_task();
+    create_sensor_task(fd);
     register_sensor_ISR();
 
 }

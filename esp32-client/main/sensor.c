@@ -2,6 +2,9 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_timer.h"
+#include "sensor.h"
+#include "client.h"
 #define SENSOR_PIN 5
 
 static TaskHandle_t sensor_task;
@@ -20,9 +23,17 @@ void register_sensor_ISR(void){
 }
 
 static void sensor_task_function(void *args){
-
+    int fd = *(int *) args;
+    
+    
+    int state = 0;
     while(1){
         ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
+        if (state == 0){
+            turn_on_light(fd);
+            state = 1;
+        }
+        
 
         //task logic 
 
@@ -32,8 +43,8 @@ static void sensor_task_function(void *args){
     }
 }
 
-void create_sensor_task(void){
-    xTaskCreate(sensor_task_function,"sensor_task",2048,NULL,3,sensor_task);
+void create_sensor_task(int fd){
+    xTaskCreate(sensor_task_function,"sensor_task",2048,(void *)&fd,3,&sensor_task);
     return;
 }
 

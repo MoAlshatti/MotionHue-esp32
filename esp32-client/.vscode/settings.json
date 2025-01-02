@@ -9,6 +9,18 @@
     "files.associations": {
         "freertos.h": "c",
         "stdio.h": "c",
-        "nvs_flash.h": "c"
+        "nvs_flash.h": "c",
+        "common.h": "c",
+        "socket.h": "c",
+        "if.h": "c",
+        "sockets.h": "c",
+        "netdb.h": "c",
+        "err.h": "c",
+        "dns.h": "c",
+        "sys.h": "c",
+        "internet": "c",
+        "buffer": "c",
+        "esp_timer.h": "c",
+        "client.h": "c"
     }
 }
