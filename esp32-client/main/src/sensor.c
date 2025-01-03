@@ -5,9 +5,10 @@
 #include "esp_timer.h"
 #include "sensor.h"
 #include "client.h"
+
 #define SENSOR_PIN 5
-#define TIMER_WAIT_TIME 15000000    //15 seconds
-#define INFINITE_WAIT_TIME UINT64_MAX   // 5000 centuries lmao
+#define TIMER_WAIT_TIME 15000000    //15 seconds in μs
+#define INFINITE_WAIT_TIME UINT64_MAX   // 5000 centuries in μs lmao
 
 static TaskHandle_t sensor_task;
 
