@@ -30,4 +30,8 @@ void app_main(void)
     create_sensor_task(fd);
     register_sensor_ISR();
 
+    while(1){
+        vTaskDelay(150);
+    }
+
 }

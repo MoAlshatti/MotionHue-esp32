@@ -1,6 +1,8 @@
 #include "lwip/sockets.h"
 #include "common.h"
 #include "client.h"
+#include "esp_timer.h"
+#include "sensor.h"
 
 
 #define SERVER_ADDR "0.0.0.0"
@@ -116,4 +118,18 @@ esp_err_t change_light_colour(int fd, unsigned long colour){
         bytes_written = write(fd,buffer,(sizeof(protocol_hdr) + sizeof(msg_t)) - bytes_written);
     }
     return ESP_OK;
+}
+
+void lights_off_timer_callback(void *arg){
+
+    timer_callback_args *args = (timer_callback_args *)arg;
+
+    int fd = *(args->fd);
+
+    int err = turn_off_light(fd);
+    if (err == ESP_FAIL){
+        //deal with error
+    }
+    *(args->light_state) = 0;
+    return;
 }
