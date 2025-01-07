@@ -6,6 +6,7 @@
 #include "server.h"
 #include <string.h>
 #include "common.h"
+#include <unistd.h>
 
 #define MAX_CLIENTS 24
 
@@ -15,8 +16,8 @@ void init_clients(void){
     for(int i = 0; i < MAX_CLIENTS; i++){
         clients[i].fd = -1;
         memset(&clients[i].buffer,0,sizeof(byte)*BUFF_SIZE);
-        return;
     }
+    return;
 }
 
 int find_empty_slot(void){
@@ -38,13 +39,18 @@ int find_client_from_fd(int fd){
 void handle_request(int client_index){
     client_t client = clients[client_index];
 
-
+    //read and handle request
+    int bytes_read = read(client.fd,client.buffer,sizeof(int));
+    int *data = (int *)&client.buffer;
+    *data = ntohl(*data);
+    printf("read from client %d\n",*data);
 
 }
 
 int main(void){
 
     int temp_fd, slot;
+    nfds_t nfds = 0;
 
     struct sockaddr_in serverInfo = {.sin_addr.s_addr = INADDR_ANY, .sin_family = AF_INET, .sin_port = htons(PORT)};
 
@@ -61,6 +67,8 @@ int main(void){
         return -1;
     }
 
+    setsockopt(lfd,SOL_SOCKET,SO_REUSEADDR,&(int){1},sizeof(int));
+
     if(bind(lfd,(struct sockaddr *)&serverInfo,sizeof(serverInfo)) == -1){
         perror("bind");
         return -1;
@@ -73,38 +81,50 @@ int main(void){
 
     struct pollfd clients_poll [MAX_CLIENTS + 1];
 
+    memset(clients_poll,0,sizeof(clients_poll));
     clients_poll[0].fd = lfd;
     clients_poll[0].events = POLLIN;
+    nfds = 1;
 
     while(1){
-        nfds_t nfds = 1;
+        int index = 1;
         for(int i = 0; i < MAX_CLIENTS; i++){
             if(clients[i].fd != -1){
-                clients_poll[nfds].fd = clients[i].fd;
-                clients_poll[nfds].events = POLLIN;
-                nfds++;
+                clients_poll[index].fd = clients[i].fd;
+                clients_poll[index].events = POLLIN;
+                index++;
             }
         }
 
         int num_events = poll(clients_poll,nfds,-1);
+        if(num_events == -1){
+            perror("poll");
+            return -1;
+        }
 
         if(clients_poll[0].revents & POLLIN){
-            if(temp_fd = accept(lfd,(struct sockaddr *)&clientInfo,&client_size) == -1){
+            if((temp_fd = accept(lfd, (struct sockaddr *)&clientInfo, &client_size)) == -1){
                 perror("accept");
                 continue;   // we continue because fd of -1 is equivalent to not adding a client
             }
-            if (slot = find_empty_slot() == -1){
+            if ((slot = find_empty_slot()) == -1){
                 fprintf(stderr,"slots are full\n");
+                close(temp_fd);
             }else{
-                clients[slot].fd = slot;
+                clients[slot].fd = temp_fd;
+                printf("client connected...\n");
+                nfds++;
+                
             }
             num_events--;
         }
-
+    
         for(int i = 1; i <= nfds && num_events > 0; i++){
+            
             if(clients_poll[i].revents & POLLIN){
                 int client_index = find_client_from_fd(clients_poll[i].fd);
-
+                
+                handle_request(client_index);
 
                 num_events--;
             }
