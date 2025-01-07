@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#define PORT 5500
+
 typedef enum {
     CONNECT,
     DISCONNECT,

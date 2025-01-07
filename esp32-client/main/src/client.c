@@ -6,7 +6,6 @@
 
 
 #define SERVER_ADDR "0.0.0.0"
-#define PORT 5500
 
 int server_connect(void){
     
