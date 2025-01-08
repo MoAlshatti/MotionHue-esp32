@@ -21,6 +21,8 @@
         "internet": "c",
         "buffer": "c",
         "esp_timer.h": "c",
-        "client.h": "c"
+        "client.h": "c",
+        "stdlib.h": "c",
+        "stdint.h": "c"
     }
 }

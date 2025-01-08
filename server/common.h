@@ -2,6 +2,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #define PORT 5500
 
@@ -16,16 +17,16 @@ typedef enum {
 
 typedef struct {
     msg_type_e msg_type;
-    unsigned long data;
+    uint64_t data;
 }msg_t;
 
 typedef enum {
-    VERSION_1,
+    VERSION_1 = 1,
 }protocol_version_e;
 
 typedef struct {
     protocol_version_e version;
-    size_t msg_length;
+    uint32_t msg_length;
 }protocol_hdr;
 
 

@@ -7,6 +7,6 @@
 
 typedef struct{
     int fd;
-    byte buffer[256];
+    byte buffer[BUFF_SIZE];
     
 }client_t;

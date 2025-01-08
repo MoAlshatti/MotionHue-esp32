@@ -37,13 +37,51 @@ int find_client_from_fd(int fd){
 }
 
 void handle_request(int client_index){
-    client_t client = clients[client_index];
+    client_t *client = &clients[client_index];
 
-    //read and handle request
-    int bytes_read = read(client.fd,client.buffer,sizeof(int));
-    int *data = (int *)&client.buffer;
-    *data = ntohl(*data);
-    printf("read from client %d\n",*data);
+    ssize_t bytes_read = read(client->fd,client->buffer,sizeof(protocol_hdr) + sizeof(msg_t));
+    if(bytes_read <= 0){
+        close(client->fd);
+        client->fd = -1;
+        memset(client->buffer,0,sizeof(client->buffer));
+        printf("client disconnected\n");
+        return;
+    }
+    protocol_hdr *hdr =(protocol_hdr *)client->buffer;
+    hdr->version = ntohs(hdr->version);
+    hdr->msg_length = ntohl(hdr->msg_length);
+
+    if(hdr->version != VERSION_1){
+        fprintf(stderr,"protocol version doesnt match!\n");
+        return;
+    }
+    if(hdr->msg_length != sizeof(msg_t)){
+        fprintf(stderr,"unexpected message length!\n");
+        return;
+    }
+
+    msg_t *msg = (msg_t *)&hdr[1];
+    msg->msg_type = ntohs(msg->msg_type);
+    msg->data =ntohl(msg->data);
+
+    switch(msg->msg_type){
+        case TURN_ON:
+            printf("recieved turn on command\n");
+            break;
+        case TURN_OFF:
+            printf("recieved turn off command\n");
+            break;
+        case CHANGE_BRIGHTNESS:
+            printf("received change brightness command to %d\n",msg->data);
+            break;
+        case CHANGE_COLOUR:
+            printf("recieved change colour to %X\n",msg->data);
+            break;
+        default:
+            printf("unexpected message!\n");
+            return;
+    }
+
 
 }
 
@@ -67,7 +105,10 @@ int main(void){
         return -1;
     }
 
-    setsockopt(lfd,SOL_SOCKET,SO_REUSEADDR,&(int){1},sizeof(int));
+    if(setsockopt(lfd,SOL_SOCKET,SO_REUSEADDR,&(int){1},sizeof(int)) == -1){
+        perror("setsockopt");
+        return -1;
+    }
 
     if(bind(lfd,(struct sockaddr *)&serverInfo,sizeof(serverInfo)) == -1){
         perror("bind");
