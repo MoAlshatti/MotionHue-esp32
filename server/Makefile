@@ -2,8 +2,8 @@ CC=gcc
 INCLUDE=-Iinclude
 LIBRARY=-lcurl
 CFLAGS=-Wall -Wextra $(INCLUDE)
-
-SRCS=src/server.c src/hue.c src/cJSON.c
+#cJSON is an external library
+SRCS=src/server.c src/hue.c src/cJSON.c	
 OBJS=obj/server.o obj/hue.o obj/cJSON.o
 BIN=bin/server
 

@@ -15,7 +15,7 @@ static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdat
 
 int send_request(msg_t req){
 
-    char URL [4068];
+    char URL [2000];
     sprintf(URL,"https://%s/clip/v2/resource/light/%s",HUE_IP,LIGHT_ID);
 
     CURL *curl_handle = NULL;
@@ -25,18 +25,14 @@ int send_request(msg_t req){
         fprintf(stderr,"curl handle failed to initialize\n");
         return -1;
     } 
-    
-    
     curl_easy_setopt(curl_handle,CURLOPT_SSL_VERIFYPEER,false); //ideally verify the certificate instead
     curl_easy_setopt(curl_handle,CURLOPT_SSL_VERIFYHOST,false);
-    curl_easy_setopt(curl_handle,CURLOPT_SSL_VERIFYSTATUS,false);
 
     cJSON *json = create_json_request(req);
     if(!json){
         fprintf(stderr,"failed to initialize req body\n");
         return -1;
     }
-
     curl_easy_setopt(curl_handle,CURLOPT_CUSTOMREQUEST, "PUT");
     char *body = cJSON_Print(json);
     curl_easy_setopt(curl_handle,CURLOPT_POSTFIELDS,body);
@@ -45,12 +41,13 @@ int send_request(msg_t req){
     hdr = hdr_init(hdr);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, hdr);
     
-
     curl_easy_setopt(curl_handle,CURLOPT_URL,URL);
     curl_easy_setopt(curl_handle,CURLOPT_WRITEFUNCTION,write_callback); //to disable prinitng repsonse to the terminal
-
+    
     res_code = curl_easy_perform(curl_handle);
-    printf("response code: %d\n",res_code);
+    if (res_code != CURLE_OK){
+    printf("%s\n",curl_easy_strerror(res_code));
+    }
 
     cJSON_free(body);
     cJSON_free(json);
@@ -90,7 +87,6 @@ static cJSON* create_json_request(msg_t req){
     else if (req.msg_type == CHANGE_COLOUR){
 
     }
-    
     return NULL;
 }
 static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata){
@@ -99,23 +95,19 @@ static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdat
     return size * nmemb;
 }
 
-
 static struct curl_slist* hdr_init(struct curl_slist *hdr){
     char host_hdr [500], key_hdr [500];
 
     sprintf(host_hdr,"Host: %s",HUE_IP);
-    hdr = curl_slist_append(hdr,host_hdr);
+    sprintf(key_hdr,"hue-application-key: %s",HUE_KEY);
 
+    hdr = curl_slist_append(hdr,host_hdr);
     hdr = curl_slist_append(NULL,"Accept:");
     hdr = curl_slist_append(NULL,"Accept-Encoding: gzip, deflate, br");
     hdr = curl_slist_append(NULL,"Connection: keep-alive");
-    
     hdr = curl_slist_append(NULL,"Transfer-Encoding: chunked");
-
     hdr = curl_slist_append(hdr,"Content-Type: application/json");
     hdr = curl_slist_append(hdr,"Cache-Control: no-cache");
-    
-    sprintf(key_hdr,"hue-application-key: %s",HUE_KEY);
     hdr = curl_slist_append(hdr,key_hdr);
     return hdr;
 }

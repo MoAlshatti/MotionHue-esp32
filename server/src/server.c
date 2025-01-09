@@ -68,14 +68,19 @@ void handle_request(int client_index){
     switch(msg->msg_type){
         case TURN_ON:
             printf("recieved turn on command\n");
-            send_request(*msg);
+            if(send_request(*msg) == -1){
+
+            }
             break;
         case TURN_OFF:
             printf("recieved turn off command\n");
-            send_request(*msg);
+            if (send_request(*msg) == -1){
+
+            }
             break;
         case CHANGE_BRIGHTNESS:
             printf("received change brightness command to %lu\n",msg->data);
+            send_request(*msg);
             break;
         case CHANGE_COLOUR:
             printf("recieved change colour to %lX\n",msg->data);
@@ -84,8 +89,6 @@ void handle_request(int client_index){
             printf("unexpected message!\n");
             return;
     }
-
-
 }
 
 int main(void){
@@ -94,11 +97,8 @@ int main(void){
     int nfds = 0;
 
     struct sockaddr_in serverInfo = {.sin_addr.s_addr = INADDR_ANY, .sin_family = AF_INET, .sin_port = htons(PORT)};
-
     struct sockaddr_in clientInfo = {0};
     socklen_t client_size = sizeof(clientInfo);
-
-    
 
     init_clients();
 
@@ -107,22 +107,18 @@ int main(void){
         perror("socket");
         return -1;
     }
-
     if(setsockopt(lfd,SOL_SOCKET,SO_REUSEADDR,&(int){1},sizeof(int)) == -1){
         perror("setsockopt");
         return -1;
     }
-
     if(bind(lfd,(struct sockaddr *)&serverInfo,sizeof(serverInfo)) == -1){
         perror("bind");
         return -1;
     }
-
     if(listen(lfd,0) == -1){
         perror("listen");
         return -1;
     }
-
     struct pollfd clients_poll [MAX_CLIENTS + 1];
 
     memset(clients_poll,0,sizeof(clients_poll));
@@ -139,13 +135,11 @@ int main(void){
                 index++;
             }
         }
-
         int num_events = poll(clients_poll,nfds,-1);
         if(num_events == -1){
             perror("poll");
             return -1;
         }
-
         if(clients_poll[0].revents & POLLIN){
             if((temp_fd = accept(lfd, (struct sockaddr *)&clientInfo, &client_size)) == -1){
                 perror("accept");
@@ -158,11 +152,9 @@ int main(void){
                 clients[slot].fd = temp_fd;
                 printf("client connected...\n");
                 nfds++;
-                
             }
             num_events--;
         }
-    
         for(int i = 1; i <= nfds && num_events > 0; i++){
             
             if(clients_poll[i].revents & POLLIN){
@@ -173,12 +165,6 @@ int main(void){
                 num_events--;
             }
         }
-
     }
-    
-
-
-
-
     return 0;
 }
