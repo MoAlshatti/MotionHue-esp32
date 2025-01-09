@@ -72,10 +72,10 @@ void handle_request(int client_index){
             printf("recieved turn off command\n");
             break;
         case CHANGE_BRIGHTNESS:
-            printf("received change brightness command to %d\n",msg->data);
+            printf("received change brightness command to %lu\n",msg->data);
             break;
         case CHANGE_COLOUR:
-            printf("recieved change colour to %X\n",msg->data);
+            printf("recieved change colour to %lX\n",msg->data);
             break;
         default:
             printf("unexpected message!\n");
@@ -88,7 +88,7 @@ void handle_request(int client_index){
 int main(void){
 
     int temp_fd, slot;
-    nfds_t nfds = 0;
+    int nfds = 0;
 
     struct sockaddr_in serverInfo = {.sin_addr.s_addr = INADDR_ANY, .sin_family = AF_INET, .sin_port = htons(PORT)};
 

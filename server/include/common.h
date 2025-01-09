@@ -1,4 +1,4 @@
-//this file should always be synced with the common.h in the server after any changes
+//this file should always be synced with the common.h in the client after any changes
 #pragma once
 
 #include <stdlib.h>
