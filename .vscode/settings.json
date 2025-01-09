@@ -2,6 +2,7 @@
     "files.associations": {
         "socket.h": "c",
         "curl.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "common.h": "c"
     }
 }

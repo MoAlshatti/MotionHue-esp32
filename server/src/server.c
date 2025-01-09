@@ -7,6 +7,7 @@
 #include <string.h>
 #include "common.h"
 #include <unistd.h>
+#include "hue.h"
 
 #define MAX_CLIENTS 24
 
@@ -67,9 +68,11 @@ void handle_request(int client_index){
     switch(msg->msg_type){
         case TURN_ON:
             printf("recieved turn on command\n");
+            send_request(*msg);
             break;
         case TURN_OFF:
             printf("recieved turn off command\n");
+            send_request(*msg);
             break;
         case CHANGE_BRIGHTNESS:
             printf("received change brightness command to %lu\n",msg->data);
