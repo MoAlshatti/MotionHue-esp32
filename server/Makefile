@@ -3,14 +3,14 @@ INCLUDE=-Iinclude
 LIBRARY=-lcurl
 CFLAGS=-Wall -Wextra $(INCLUDE)
 
-SRCS=src/server.c src/hue.c
-OBJS=obj/server.o obj/hue.o
+SRCS=src/server.c src/hue.c src/cJSON.c
+OBJS=obj/server.o obj/hue.o obj/cJSON.o
 BIN=bin/server
 
 all: $(BIN)
 
 $(BIN): $(OBJS)
-	$(CC) $(LIBRARY) -o $@ $^ 
+	$(CC) -o $@ $^ $(LIBRARY)
 
 obj/%.o:src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $^
